@@ -2,6 +2,17 @@
 console.log('This is a popup!');
 import jsonview from '@pgrabovets/json-view';
 
+// const memory = {};
+
+const elementIds = {
+    getCartButton: 'action-get-primary-cart',
+    createCartForm: 'create-cart-form',
+};
+
+const actions = {
+    getCart: 'get-primary-cart',
+};
+
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     console.log(tabs);
     const currentTab = tabs[0];
@@ -14,24 +25,29 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('what is going on');
-    const element = document.getElementById('action-get-primary-cart');
-    element.addEventListener('click', () => {
+    const getCartElement = document.getElementById(elementIds.getCartButton);
+    getCartElement.addEventListener('click', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            console.log('clicked');
             const currentTab = tabs[0];
 
-            console.log(currentTab, element);
+            console.log(currentTab, getCartElement);
 
-            chrome.tabs.sendMessage(currentTab.id, { action: 'get-primary-cart' }).then((response) => {
+            chrome.tabs.sendMessage(currentTab.id, { action: actions.getCart }).then((response) => {
                 console.log(response);
-
-                // clear
                 document.querySelector('.json-container').innerHTML = '';
 
                 const tree = jsonview.create(response.json);
                 jsonview.render(tree, document.querySelector('.json-container'));
             });
         });
+    });
+
+    const createCartForm = document.getElementById(elementIds.createCartForm);
+    createCartForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const values = Object.fromEntries(formData);
+        console.log(values);
     });
 });
